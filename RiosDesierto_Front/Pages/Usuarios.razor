@@ -1,0 +1,100 @@
+﻿@page "/Usuarios"
+
+<PageTitle>Usuario</PageTitle>
+
+@using RiosDesierto_Front.Data
+@inject UsuarioApiService UsuarioService
+@inject TiposDocumentoAPIService TipoDocService
+
+<h3 class="text-center">Usuarios RioDesierto</h3>
+
+<div class="container top-row px-4">
+    <EditForm Model="@Search">
+
+        <div class="row">
+            <div class="col-3  py-4 align-self-center ">
+                 <label for="TDocumento" class="form-label">TipoDocumento</label>
+                    <select class="form-select" @bind="Search.TipoDocumentoID">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        @if (listaTiposDocs.Count() != 0)
+                        {
+                            @foreach (var cnt in listaTiposDocs)
+                            {
+                                <option value="@cnt.TipoDocumentoID">@cnt.Descripcion</option>
+                            }
+                        }
+                    </select>
+            </div>
+            <div class="col-5  py-4 align-self-start ">
+                    <label for="NoIdentificacion" class="form-label">No. Identificación</label>
+                    <InputNumber id="name" class="form-control" @bind-Value="Search.NumeroDocumento" />
+            </div>
+            <div class="d-flex col-4 py-4  align-items-end">
+                <button type="submit" class="btn btn-primary  mx-2" onclick="@(async()=>await HandleSubmit())">Buscar</button>
+                <button type="button" class="btn btn-secondary btn-block mx-2" onclick="@DownloadFile">Exportar</button>
+            </div>
+        </div>
+    </EditForm>
+    
+</div>
+
+
+@if(Usuario!=null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>TipoDocumento</th>
+                <th>Numero Documento</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Correo</th>
+                <th>Telefono</th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr>
+                    <td>@Usuario.TipoDocumento.Descripcion</td>
+                    <td>@Usuario.NumeroDocumento</td>
+                    <td>@Usuario.Nombre</td>
+                    <td>@Usuario.Apellido</td>
+                    <td>@Usuario.Correo</td>
+                    <td>@Usuario.Telefono</td>
+                </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private UsuarioGetDTO? Usuario;
+
+    private UsuarioSearchDTO Search;
+    private IEnumerable<TipoDocumentoDTO> listaTiposDocs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaTiposDocs = await TipoDocService.GetAsync();
+        Search = new();
+    }
+
+    private async Task HandleSubmit()
+    {
+        Usuario= (await UsuarioService.SerachAsync(Search))??new UsuarioGetDTO()
+        {
+            Nombre="NO encontrado",
+            Apellido="No encontrado",
+            Telefono=0,
+            Correo="No encontrado",
+            NumeroDocumento=0,
+            TipoDocumento=new()
+            {
+                Descripcion="No encontrado"
+            }
+        };
+    }
+    private void DownloadFile()
+    {
+       Console.WriteLine("Descargando Archvo");
+    }
+}
